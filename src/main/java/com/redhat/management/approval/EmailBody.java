@@ -14,6 +14,10 @@ import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,9 +57,8 @@ public class EmailBody implements Serializable {
 
         String webUrl = System.getenv("APPROVAL_WEB_URL");
         try {
-            byte[] bytes = approver.getUserName().getBytes("UTF-8");
-            String encoded_user = Base64.getEncoder().encodeToString(bytes);
-            String approveLink = webUrl + "/api/approval/v1.0/stageaction/" + request.getRandomAccessKey() + "?approver=" + encoded_user;
+            String perUserUrl = request.getRandomAccessKey() + ";" + approver.getUserName();
+            String approveLink = webUrl + "/api/approval/v1.0/stageaction/" + encrypt(perUserUrl);
             values.put("approve_link", approveLink);
 
             String orderLink = webUrl + "/ansible/catalog/approval/requests/detail/" + getApprovalId();
@@ -66,7 +69,10 @@ public class EmailBody implements Serializable {
             e.printStackTrace();
         }
         catch (IOException e) {
-            e.printStackTrace(); 
+            e.printStackTrace();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
@@ -168,6 +174,26 @@ public class EmailBody implements Serializable {
         }
 
         return content.toString();
+    }
+
+    private String encrypt(String strToEncrypt) throws Exception {
+        String v2Key = System.getenv("ENCRYPTION_KEY");
+        if(v2Key == null) {
+            v2Key = "5ysYUd3Qrjj7DDplmEJHmnrFBEPS887JwOQv0jFYq2g=";
+        }
+        byte[] keyBytes = Base64.getDecoder().decode(v2Key);
+        SecretKeySpec secretKey = new SecretKeySpec(keyBytes, "AES");
+
+        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        IvParameterSpec ivpec = new IvParameterSpec(iv);
+
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivpec);
+
+        String output = Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
+        output = output.replace("\n", "");
+
+        return URLEncoder.encode("v2:{" + output + "}", "UTF-8");
     }
 
     private String getRequestContentLines(Map<String, Object> contents) {
