@@ -33,15 +33,23 @@ public class Group implements Serializable {
     public void setApprovers(List<Approver> approvers) {
         this.approvers = approvers;
     }
+    
+    public String getFirstRandomAccessKey() {
+        return approvers.get(0).getRandomAccessKey();
+    }
 
     public String toString() {
-        String groupStr = "Group: " + "\n name: " + this.name
-                + "\n ref: " + this.uuid;
+        StringBuilder groupStr = new StringBuilder("\nGroup: \n");
+        
+        groupStr.append(" name: "); 
+        groupStr.append(this.name);
+        groupStr.append("\n ref: ");
+        groupStr.append(this.uuid);
 
         for (Approver approver : approvers) {
-            groupStr = groupStr + approver;
+            groupStr.append("\n" + approver);
         }
-        return groupStr;
+        return groupStr.toString();
     }
 
     public String getUuid() {

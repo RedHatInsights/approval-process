@@ -1,8 +1,6 @@
 package com.redhat.management.approval;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Base64;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -19,13 +17,13 @@ public class Request implements Serializable {
 
     static final long serialVersionUID = 1L;
 
+    private static final String SYSADMIN = "sysadmin";
     private String requester;
     private String name;
     private String createdTime;
     private String id;
     private String parentId;
     private String tenantId;
-    private String randomAccessKey;
     private String groupRef;
     private String groupName;
 
@@ -41,7 +39,6 @@ public class Request implements Serializable {
         this.name = maps.get("name").toString();
         this.createdTime = maps.get("created_at").toString();
         this.groupRef = maps.get("group_ref").toString();
-        this.randomAccessKey = maps.get("random_access_key").toString();
         this.groupName = maps.get("group_name").toString();
         this.user = getRHIdentity().getUser();
     }
@@ -85,14 +82,6 @@ public class Request implements Serializable {
     public void setRequestPacket(RequestPacket packet) {
         this.packet = packet;
     }
-    
-    public String getRandomAccessKey() {
-        return this.randomAccessKey;
-    }
-
-    public void setRandomAccessKey(String randomAccessKey) {
-        this.randomAccessKey = randomAccessKey;
-    }
 
     public String getGroupRef() {
         return this.groupRef;
@@ -103,9 +92,12 @@ public class Request implements Serializable {
     }
 
     public String toString() {
-        return "Request: " + "\n name: " + this.name
-                + "\n id: " + this.id
-                + "\n tenant id: " + this.tenantId;
+        StringBuilder sb = new StringBuilder("Request:  \n name: ");
+        sb.append(this.name +  "\n id: ");
+        sb.append(this.id + "\n tenant id: ");
+        sb.append(this.tenantId + "\n");
+        sb.append(this.user);
+        return sb.toString();
     }
 
     public String getCreatedTime() {
@@ -160,26 +152,23 @@ public class Request implements Serializable {
     public String getPostActionHeaders() {
         RHIdentity rhid = getRHIdentity();
 
-        rhid.getUser().setEmail("sysadmin");
-        rhid.getUser().setFirst_name("sysadmin");
-        rhid.getUser().setLast_name("sysadmin");
-        String headers = "x-rh-identity=" + createEncodedIdentity(rhid);
-        headers += ";x-rh-random-access-key=" +  getRandomAccessKey();
-        return headers;
+        rhid.getUser().setEmail(SYSADMIN);
+        rhid.getUser().setFirst_name(SYSADMIN);
+        rhid.getUser().setLast_name(SYSADMIN);
+        return "x-rh-identity=" + createEncodedIdentity(rhid);
     }
 
     private String createEncodedIdentity(RHIdentity id) {
-        ObjectMapper Obj = new ObjectMapper();
-        Obj.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper obj = new ObjectMapper();
+        obj.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String encoded = "";
 
         try {
-            String jsonStr = Obj.writeValueAsString(id);
+            String jsonStr = obj.writeValueAsString(id);
             byte[] bytes = jsonStr.getBytes("UTF-8");
             encoded = Base64.getEncoder().encodeToString(bytes);
         }
         catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         catch (IOException e) {
@@ -190,24 +179,20 @@ public class Request implements Serializable {
     }  
 
     private RHIdentity toRHIdentity(String encodedContext) {
-        System.out.println("getIdentity: encoded context = " + encodedContext);
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        RHIdentity id = new RHIdentity();
+        RHIdentity rhid = new RHIdentity();
 
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(encodedContext);
             String jsonStr = new String(decodedBytes);
-            System.out.println("Decoded identity: " + jsonStr);
-            id = mapper.readValue(jsonStr, RHIdentity.class);
-            System.out.println("getIdentity: " + id);
+            rhid = mapper.readValue(jsonStr, RHIdentity.class);
         } catch (IOException e) {
               // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-        return id;
+        return rhid;
     }
 
 }
