@@ -17,10 +17,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 
 public class EmailBody implements Serializable {
-
     static final long serialVersionUID = 1L;
     private static String templateFile = "AnsibleCatalogEmailTemplate.html";
-    private static final String PARAMS_KEY = "params"; 
 
     private Approver approver;
     private Group group;
@@ -46,7 +44,10 @@ public class EmailBody implements Serializable {
         values.put("approver_name", approver.getFirstName() + " " + approver.getLastName());
         values.put("requester_name", getIdentityFullName());
         values.put("orderer_email", getIdentityEmail());
-        values.put("contents", getRequestContentLines(requestContent));
+        values.put("order_id", requestContent.get("order_id").toString());
+        values.put("product", requestContent.get("product").toString());
+        values.put("portfolio", requestContent.get("portfolio").toString());
+        values.put("platform", requestContent.get("platform").toString());
 
         String webUrl = System.getenv("APPROVAL_WEB_URL");
         String approveLink = String.format("%s%s/stageaction/%s", webUrl,
@@ -65,16 +66,7 @@ public class EmailBody implements Serializable {
             log.error(e.getMessage(), e);
         }
 
-        HashMap<String, Object> params = (HashMap<String, Object>) requestContent.get(PARAMS_KEY);
-
-        values.put(PARAMS_KEY, getParamsTable(params));
-        values.put("approval_id", getApprovalId());
-
         return values;
-    }
-
-    public String customizeKey(String key) {
-        return StringUtils.capitalize(key.replace("_", " ").replaceAll("id", "ID").replaceAll("Id", "ID"));
     }
 
     public Approver getApprover() {
@@ -153,30 +145,5 @@ public class EmailBody implements Serializable {
         }
 
         return content.toString();
-    }
-
-    private String getRequestContentLines(Map<String, Object> contents) {
-        StringBuilder lines = new StringBuilder();
-
-        for (HashMap.Entry<String, Object> entry : contents.entrySet()) {
-            if (entry.getKey().equals(PARAMS_KEY))
-                continue;
-  
-            String line = "<strong>" + customizeKey(entry.getKey()) + ":</strong>" + entry.getValue().toString() + "<br>";
-            lines.append(line);
-        }
-        return lines.toString();
-    }
-
-    private String getParamsTable(HashMap<String, Object> params) {
-        StringBuilder paramsTable = new StringBuilder(
-                "<table><tbody><tr><td><strong>Key</strong></td><td><strong>Value<strong></td></tr>\n");
-        
-        for (HashMap.Entry<String, Object> entry: params.entrySet()) {
-            String param = "<tr><td>" + entry.getKey() + "</td><td>" + entry.getValue().toString() + "</td></tr>\n";
-            paramsTable.append(param);
-        };
-        paramsTable.append("</tbody></table>");
-        return paramsTable.toString();
     }
 }
