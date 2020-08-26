@@ -1,0 +1,8 @@
+services-automation-services-catalog/approval-process:api/registry.redhat.io/rhpam-7/rhpam73-kieserver-openshift:1.0
+services-automation-services-catalog/approval-process:api/org.kie:kie-internal:7.17.0.Final
+services-automation-services-catalog/approval-process:api/org.optaplanner:optaplanner-core:7.17.0.Final
+services-automation-services-catalog/approval-process:api/org.optaplanner:optaplanner-persistence-jaxb:7.17.0.Final
+services-automation-services-catalog/approval-process:api/org.kie:kie-api:7.17.0.Final
+services-automation-services-catalog/approval-process:api/com.fasterxml.jackson.core:jackson-databind:2.10.0.pr1
+services-automation-services-catalog/approval-process:api/org.apache.commons:commons-lang3:3.8.1
+services-automation-services-catalog/approval-process:api/org.kie:kie-maven-plugin:7.17.0.Final
