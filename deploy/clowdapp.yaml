@@ -138,7 +138,7 @@ objects:
             cpu: 200m
             memory: 500Mi
     database:
-      name: pam
+      name: approval-pam
 
 parameters:
 - name: CLOWDER_ENABLED
