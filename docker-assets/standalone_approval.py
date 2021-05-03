@@ -3,6 +3,7 @@
 import os
 import sys
 import xml.dom.minidom
+import base64
 
 def create_xa_datasource_node(dom):
     RHPAM_DB_HOST = os.getenv('RHPAM_DB_HOST')
@@ -216,3 +217,10 @@ update_datasource_node(doc)
 
 with open(conf,'w') as f:
     f.write(doc.toxml())
+
+#debug
+print("keystore file size ", os.path.getsize('/opt/eap/standalone/configuration/backoffice.jks'))
+afile = open("/opt/eap/standalone/configuration/standalone-approval.xml")
+aline = afile.read()[0:2600]
+afile.close()
+print("Probe the xml:", aline.encode('base64'))
