@@ -13,8 +13,14 @@ objects:
     kie-admin-pwd: "${KIE_ADMIN_PASSWORD}"
     kie-server-user: "${KIE_SERVER_USER}"
     kie-server-pwd: "${KIE_SERVER_PASSWORD}"
-    backoffice-token: xyz
     keystore_password: password
+- apiVersion: v1
+  kind: Secret # For ephemeral/local environment
+  metadata:
+    name: backoffice
+  stringData:
+    token: xyz
+    client-id: approval-api
 - apiVersion: v1
   kind: Secret # For ephemeral/local environment
   metadata:
@@ -118,14 +124,17 @@ objects:
         - name: BACKOFFICE_URL
           value: ${BACKOFFICE_SCHEME}://${BACKOFFICE_HOST}:${BACKOFFICE_PORT}/${BACKOFFICE_EMAIL_PATH}
         - name: BACKOFFICE_CLIENT_ID
-          value: approval-api
+          valueFrom:
+            secretKeyRef:
+              name: backoffice
+              key: client-id
         - name: BACKOFFICE_CLIENT_ENV
           value: ${BACKOFFICE_CLIENT_ENV}
         - name: BACKOFFICE_TOKEN
           valueFrom:
             secretKeyRef:
-              name: approval-pam-secrets
-              key: backoffice-token
+              name: backoffice
+              key: token
         - name: APPROVAL_API_URL
           value: ${APPROVAL_SCHEME}://${APPROVAL_HOST}:${APPROVAL_PORT}
         - name: APPROVAL_WEB_URL
