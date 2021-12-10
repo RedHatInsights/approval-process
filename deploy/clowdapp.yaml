@@ -196,7 +196,7 @@ parameters:
 - name: BACKOFFICE_HOST
   displayName: Back-Office Service Host
   description: Host to use the back-office.
-  value: backoffice-proxy-insights-services.ext.us-east.aws.preprod.paas.redhat.com
+  value: backoffice-proxy.apps.ext.spoke.preprod.us-west-2.aws.paas.redhat.com
   required: true
 - name: BACKOFFICE_PORT
   displayName: Back-Office Service Port
