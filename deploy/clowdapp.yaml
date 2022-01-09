@@ -36,7 +36,9 @@ objects:
     deployments:
     - name: pam
       minReplicas: ${{MIN_REPLICAS}}
-      web: true
+      webServices:
+        public:
+          enabled: True
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         terminationGracePeriodSeconds: 60
